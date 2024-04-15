@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 
 import { twMerge } from "tailwind-merge";
 import qs from "query-string";
+import CryptoJS from "crypto-js";
 
 import { UrlQueryParams, RemoveUrlQueryParams } from "@/types";
 
@@ -103,3 +104,31 @@ export const handleError = (error: unknown) => {
   console.error(error);
   throw new Error(typeof error === "string" ? error : JSON.stringify(error));
 };
+
+
+
+
+const SECRET_KEY = 'your_secret_key'; // Secret key for encryption
+
+// Function to encrypt and store a value in local storage
+export function saveEncryptedValue(key: string, value: any): void {
+  const encryptedValue = CryptoJS.AES.encrypt(JSON.stringify(value), SECRET_KEY).toString();
+  localStorage.setItem(key, encryptedValue);
+}
+
+// Function to retrieve and decrypt a value from local storage
+export function getDecryptedValue<T>(key: string): T | null {
+  const encryptedValue = localStorage.getItem(key);
+  if (encryptedValue) {
+    const bytes = CryptoJS.AES.decrypt(encryptedValue, SECRET_KEY);
+    const decryptedValue = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return decryptedValue as T;
+  }
+  return null;
+}
+
+// Function to delete a value from local storage
+export function deleteValue(key: string): void {
+  localStorage.removeItem(key);
+}
+

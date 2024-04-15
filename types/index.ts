@@ -17,11 +17,13 @@ export type UpdateUserParams = {
 
 // ====== EVENT PARAMS
 export type CreateEventParams = {
+    ownerPrincipal: string;
     userId: string;
     event: {
+        eventUUID: string;
         title: string;
-        description: string;
         ownerPrincipal: string;
+        description: string;
         location: string;
         imageUrl: string;
         startDateTime: Date;
@@ -35,9 +37,11 @@ export type CreateEventParams = {
 };
 
 export type UpdateEventParams = {
+    ownerPrincipal: string;
     userId: string;
     event: {
         _id: string;
+        eventUUID: string;
         title: string;
         ownerPrincipal: string;
         imageUrl: string;
@@ -56,6 +60,7 @@ export type UpdateEventParams = {
 export type DeleteEventParams = {
     eventId: string;
     ownerPrincipal: string;
+    eventUUID: string;
     path: string;
 };
 
@@ -67,6 +72,7 @@ export type GetAllEventsParams = {
 };
 
 export type GetEventsByUserParams = {
+    ownerPrincipal: string;
     userId: string;
     limit?: number;
     page: number;
@@ -82,7 +88,6 @@ export type GetRelatedEventsByCategoryParams = {
 export type Event = {
     _id: string;
     title: string;
-    ownerPrincipal: string;
     description: string;
     price: string;
     isFree: boolean;

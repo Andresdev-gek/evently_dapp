@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,28 +25,106 @@ import { Input } from "@/components/ui/input";
 import { eventDefaultValues } from "@/constants";
 import Dropdown from "./Dropdown";
 import Image from "next/image";
-
+import { getDecryptedValue } from "@/lib/utils";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useRouter } from "next/navigation";
+import { createEvent } from "@/lib/actions/event.actions";
 type EventFormProps = {
   userId: string;
   type: "Create" | "Update";
 };
 
 const EventForm = ({ userId, type }: EventFormProps) => {
+  const actualPrincipal = getDecryptedValue("principalAddress");
+  const router = useRouter();
+
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    // Verifica si el principal es null o tiene un valor (es decir a coneectado su wallet)
+    if (actualPrincipal !== null) {
+      setShowForm(true);
+    }
+  }, [actualPrincipal]);
+
   const [files, setFiles] = useState<File[]>([]);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
   const initialValues = eventDefaultValues;
 
+  const { startUpload } = useUploadThing("imageUploader");
+
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues,
   });
 
-  function onSubmit(values: z.infer<typeof eventFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+    const eventData = values;
+    let uploadedImageUrl = values.imageUrl;
+
+    if (files.length > 0) {
+      const uploadedImages = await startUpload(files);
+
+      if (!uploadedImages) {
+        return;
+      }
+
+      uploadedImageUrl = uploadedImages[0].url;
+    }
+
+    if (type === "Create") {
+      try {
+        const uuid = `EI${crypto.randomUUID()}`;
+        // aca se crea en stacks
+        // aca se crea en mongo
+
+        const newEvent = await createEvent({
+          ownerPrincipal: actualPrincipal as string,
+          userId,
+          event: {
+            ...values,
+            imageUrl: uploadedImageUrl,
+            eventUUID: uuid,
+            ownerPrincipal: actualPrincipal as string,
+          },
+          path: "/profile",
+        });
+
+        if (newEvent) {
+          form.reset();
+          router.push(`/events/${newEvent._id}`);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+
+  if(!showForm) {
+    return (<div
+      className="flex bg-yellow-100 rounded-lg p-4 mb-4 text-md text-yellow-700"
+      role="alert"
+    >
+      <svg
+        className="w-5 h-5 inline mr-3"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
+      <div>
+        <span className="font-medium">Hey!</span> You must connect your
+        wallet to do this.
+      </div>
+    </div>)
   }
 
   return (
@@ -240,25 +318,31 @@ const EventForm = ({ userId, type }: EventFormProps) => {
                       className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
 
-<FormField
-                        control={form.control}
-                        name="isFree"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="flex items-center">
-                                <label htmlFor="isFree" className="whitespace-nowrap pr-3 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Free Ticket</label>
-                                <Checkbox
-                                  onCheckedChange={field.onChange}
-                                  checked={field.value}
-                                id="isFree" className="mr-2 h-5 w-5 border-2 border-primary-500" />
-                              </div>
-          
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />   
+                    <FormField
+                      control={form.control}
+                      name="isFree"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="flex items-center">
+                              <label
+                                htmlFor="isFree"
+                                className="whitespace-nowrap pr-3 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                Free Ticket
+                              </label>
+                              <Checkbox
+                                onCheckedChange={field.onChange}
+                                checked={field.value}
+                                id="isFree"
+                                className="mr-2 h-5 w-5 border-2 border-primary-500"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -266,7 +350,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
 
-<FormField
+          <FormField
             control={form.control}
             name="url"
             render={({ field }) => (
@@ -292,11 +376,41 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
         </div>
-        <Button type="submit" 
-        size="lg"
-        disabled={form.formState.isSubmitting}
-        className="button col-span-2 w-full"
-        >{form.formState.isSubmitting ? ('Submitting'): `${type} Event`}</Button>
+
+        {type === "Create" && (
+          <div
+            className="flex bg-blue-100 rounded-lg p-4 mb-4 text-sm text-blue-700"
+            role="alert"
+          >
+            <svg
+              className="w-5 h-5 inline mr-3"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+            <div>
+              <span className="font-medium">Attention!</span> <br /> It is
+              important that you know that when creating an event the owner of
+              this event is the wallet with which you have connected and not
+              your account itself.
+            </div>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          size="lg"
+          disabled={form.formState.isSubmitting}
+          className="button col-span-2 w-full"
+        >
+          {form.formState.isSubmitting ? "Submitting" : `${type} Event`}
+        </Button>
       </form>
     </Form>
   );

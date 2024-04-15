@@ -4,16 +4,13 @@ import React, { useEffect, useState } from "react";
 import { AppConfig, showConnect, UserSession } from "@stacks/connect";
 import Image from "next/image";
 import TruncateText from "./TruncateText"
+import { deleteValue, saveEncryptedValue } from "@/lib/utils";
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
 
 export const userSession = new UserSession({ appConfig });
-console.log(userSession)
-const iconStyles = {
-  width: "80px",
-  height: "80px",
-  backgroundColor: "#81DE76",
-};
+
+
 
 function authenticate() {
   showConnect({
@@ -23,6 +20,7 @@ function authenticate() {
     },
     redirectTo: "/",
     onFinish: () => {
+      saveEncryptedValue("principalAddress", userSession.loadUserData().profile.stxAddress.testnet);
       window.location.reload();
     },
     userSession,
@@ -30,6 +28,7 @@ function authenticate() {
 }
 
 function disconnect() {
+  deleteValue("principalAddress");
   userSession.signUserOut("/");
 }
 

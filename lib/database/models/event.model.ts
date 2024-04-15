@@ -2,6 +2,7 @@ import { Document, Schema, model, models } from "mongoose";
 
 export interface IEvent extends Document {
     _id: string;
+    eventUUID: string;
     title: string;
     ownerPrincipal: string;
     description?: string;
@@ -19,6 +20,7 @@ export interface IEvent extends Document {
 }
 
 const EventSchema = new Schema({
+    eventUUID: { type: String, required: true },
     title: { type: String, required: true },
     ownerPrincipal: { type: String, required: true },
     description: { type: String, required: true },
