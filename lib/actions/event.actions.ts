@@ -116,7 +116,7 @@ export const findEventsByUuids = async (uuids: string[]) => {
     }
 };
 
-export const findEventsByOwnerPrincipal = async (ownerPrincipal: string): Promise<IEvent[]> => {
+export const findEventsByOwnerPrincipal = async (ownerPrincipal: string) => {
     try {
 
 
