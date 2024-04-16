@@ -118,8 +118,6 @@ export const findEventsByUuids = async (uuids: string[]) => {
 
 export const findEventsByOwnerPrincipal = async (ownerPrincipal: string) => {
     try {
-
-
         const eventsQuery = Event.find({ ownerPrincipal });
         const events = await populateEvent(eventsQuery);
         return JSON.parse(JSON.stringify(events))
