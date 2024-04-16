@@ -28,14 +28,23 @@ import Image from "next/image";
 import { getDecryptedValue } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadthing";
 import { useRouter } from "next/navigation";
-import { createEvent } from "@/lib/actions/event.actions";
+import { createEvent, updateEvent } from "@/lib/actions/event.actions";
+import { IEvent } from "@/lib/database/models/event.model";
+
 type EventFormProps = {
   userId: string;
   type: "Create" | "Update";
+  event?: IEvent;
+  eventId?: string;
 };
 
-const EventForm = ({ userId, type }: EventFormProps) => {
-  const actualPrincipal = getDecryptedValue("principalAddress");
+const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
+  const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
+
+  useEffect(() => {
+    const principal = getDecryptedValue("principalAddress");
+    if (principal) setActualPrincipal(principal as string);
+  }, []);
   const router = useRouter();
 
   const [showForm, setShowForm] = useState(false);
@@ -51,7 +60,18 @@ const EventForm = ({ userId, type }: EventFormProps) => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const initialValues = eventDefaultValues;
+  const initialValues =
+    event && type === "Update"
+      ? {
+          ...event,
+          startDateTime: event.startDateTime
+            ? new Date(event.startDateTime)
+            : new Date(),
+          endDateTime: event.endDateTime
+            ? new Date(event.endDateTime)
+            : new Date(),
+        }
+      : eventDefaultValues;
 
   const { startUpload } = useUploadThing("imageUploader");
 
@@ -100,31 +120,61 @@ const EventForm = ({ userId, type }: EventFormProps) => {
         console.log(error);
       }
     }
+
+    if (type === "Update") {
+      if (!eventId) {
+        router.back();
+        return;
+      }
+
+      try {
+        const updatedEvent = await updateEvent({
+          ownerPrincipal: actualPrincipal as string,
+          userId,
+          event: {
+            ...values,
+            imageUrl: uploadedImageUrl,
+            _id: eventId,
+            eventUUID: event?.eventUUID as string,
+            ownerPrincipal: actualPrincipal as string,
+          },
+          path: `/events/${eventId}`,
+        });
+
+        if (updatedEvent) {
+          form.reset();
+          router.push(`/events/${updatedEvent._id}`);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
-
-  if(!showForm) {
-    return (<div
-      className="flex bg-yellow-100 rounded-lg p-4 mb-4 text-md text-yellow-700"
-      role="alert"
-    >
-      <svg
-        className="w-5 h-5 inline mr-3"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
+  if (!showForm) {
+    return (
+      <div
+        className="flex bg-yellow-100 rounded-lg p-4 mb-4 text-md text-yellow-700"
+        role="alert"
       >
-        <path
-          fill-rule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-          clip-rule="evenodd"
-        ></path>
-      </svg>
-      <div>
-        <span className="font-medium">Hey!</span> You must connect your
-        wallet to do this.
+        <svg
+          className="w-5 h-5 inline mr-3"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd"
+          ></path>
+        </svg>
+        <div>
+          <span className="font-medium">Hey!</span> You must connect your wallet
+          to do this.
+        </div>
       </div>
-    </div>)
+    );
   }
 
   return (

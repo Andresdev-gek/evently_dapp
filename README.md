@@ -7,6 +7,7 @@ Evently is a dapp that helps you manage events, promote them, sell them, or simp
 ### Technologies used: 
 - Node.js
 - Next.js
+- Stacks.js
 - TypeScript
 - TailwindCSS
 - Zod

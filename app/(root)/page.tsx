@@ -20,8 +20,7 @@ export default async function Home() {
           <div className="flex flex-col justify-center gap-8">
             <h1 className="h1-bold">Celebrate Moments, Elevate Your Events!</h1>
             <p className="p-regular-20 md:p-regular-24">
-              Unlocking Unforgettable Moments: Elevate Your Events with Seamless
-              Management and the reliability of the Blockchain!
+              Unlocking Unforgettable Moments: Improve Your Events with Seamless Management and the reliability of the Blockchain!
             </p>
             <Button size="lg" asChild className="button w-full sm:w-fit">
               <Link href="#events">Explore Now</Link>
@@ -56,7 +55,7 @@ export default async function Home() {
           collectionType="All_Events"
           limit={6}
           page={1}
-          totalPage={2}
+          totalPages={2}
         />
       </section>
     </>
