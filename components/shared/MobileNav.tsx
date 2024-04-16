@@ -18,7 +18,7 @@ const MobileNav = () => {
             <Image alt="menu" src="/assets/icons/menu.svg" width={24} height={24} className="cursor-pointer"/>
         </SheetTrigger>
         <SheetContent className="flex flex-col gap-6 bg-white md:hidden">
-        <Image alt="menu" src="/public/assets/complete-logo.svg" width={128} height={38} />
+        <Image alt="menu" src="/assets/complete-logo.svg" width={128} height={38} />
         <Separator className="border border-gray" />
         <NavItems/>
         </SheetContent>
