@@ -4,6 +4,7 @@ import React from "react";
 import { IEvent } from "@/lib/database/models/event.model";
 import { useUser, SignedOut, SignedIn } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
+import Checkout from './Checkout';
 import Link from "next/link";
 
 
@@ -29,7 +30,7 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
         </SignedOut>
 
         <SignedIn>
-
+            <Checkout event={event} userId={userId}/>
         </SignedIn>
     </>)}
   </div>);

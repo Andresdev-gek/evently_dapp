@@ -6,20 +6,46 @@ import { findEventsByOwnerPrincipal } from "../../../lib/actions/event.actions";
 import { getDecryptedValue } from "../../../lib/utils";
 import { Button } from "../../../components/ui/button";
 import Collection from "../../../components/shared/Collection";
+import Spinner from "../../../components/shared/Spinner";
 import Link from "next/link";
 import { IEvent } from "../../../lib/database/models/event.model";
 
 const ProfilePage = () => {
   const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
+  const [showSpinner, setShowSpinner] = useState(false)
   const [myTickets, setMyTickets] = useState<IEvent[]>([]);
   const [eventsByPrincipal, setEventsByPrincipal] = useState<IEvent[]>([]);
   const [show, setShow] = useState(false);
   
-
-  useEffect(() => {
-    const principal = getDecryptedValue("principalAddress");
+ async function getEvents() {
+    try {
+        const events = await findEventsByOwnerPrincipal(actualPrincipal as string)
+        setEventsByPrincipal(events);
+    } catch (error) {
+        console.log("Event not found with principal", error);
+    }
+ }
+   useEffect(() => {
+    const principal: string | null = getDecryptedValue("principalAddress");
     if (principal) setActualPrincipal(principal as string);
-  }, []);
+
+    setShowSpinner(true);
+    findEventsByOwnerPrincipal(actualPrincipal as string)
+      .then((events) => {
+        if (events.length > 0) {
+          setEventsByPrincipal(events);
+          console.log(events);
+          setShowSpinner(false);
+        } else {
+          console.log("Event not found with principal");
+          setShowSpinner(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setShowSpinner(false);
+      });
+  }, [actualPrincipal]);
 
   useEffect(() => {
     if (actualPrincipal !== null) {
@@ -27,20 +53,7 @@ const ProfilePage = () => {
     }
   }, [actualPrincipal]);
 
-  useEffect(() => {
-    findEventsByOwnerPrincipal(actualPrincipal as string)
-      .then((events) => {
-        if (events.length > 0) {
-          setEventsByPrincipal(events);
-          console.log(events);
-        } else {
-          console.log("Event not found with principal");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }, [actualPrincipal]);
+  
 
   // Luego, en otro lugar del componente
   // Esto evitará que la actualización del estado cause un bucle
@@ -122,16 +135,20 @@ const ProfilePage = () => {
       </section>
 
       <section className="wrapper my-8 ">
+        {showSpinner && <Spinner/>}
+        {!showSpinner && 
         <Collection
-          data={eventsByPrincipal}
-          emptyTitle="There are no events created by you yet"
-          emptyStateSubtext="No worries something will occur to you soon"
-          collectionType="Events_Organized"
-          limit={3}
-          page={1}
-          urlParamName="ordersPage"
-          totalPages={2}
-        />
+        data={eventsByPrincipal}
+        emptyTitle="There are no events created by you yet"
+        emptyStateSubtext="No worries something will occur to you soon"
+        collectionType="Events_Organized"
+        limit={3}
+        page={1}
+        urlParamName="ordersPage"
+        totalPages={2}
+      />
+        }
+        
       </section>
     </>
   );
