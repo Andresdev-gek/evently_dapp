@@ -3,6 +3,7 @@ import React from "react"
 import EventForm from "@/components/shared/EventForm"
 import { getEventById } from "@/lib/actions/event.actions"
 import { auth } from "@clerk/nextjs";
+import { IEvent } from "@/lib/database/models/event.model";
 
 type UpdateEventProps = {
   params: {
@@ -14,7 +15,7 @@ const UpdateEvent = async ({ params: { id } }: UpdateEventProps) => {
   const { sessionClaims } = auth();
 
   const userId = sessionClaims?.userId as string;
-  const event = await getEventById(id);
+  const event: IEvent = await getEventById(id);
 
   return (
     <>
@@ -28,6 +29,7 @@ const UpdateEvent = async ({ params: { id } }: UpdateEventProps) => {
           event={event} 
           eventId={event._id} 
           userId={userId} 
+          eventUUID={event.eventUUID}
         />
       </div>
     </>

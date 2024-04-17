@@ -14,16 +14,19 @@ export const userSession = new UserSession({ appConfig });
 
 function authenticate() {
   showConnect({
+    userSession,
     appDetails: {
-      name: "Stacks Next.js Starter",
-      icon: window.location.origin + "/logo512.png",
+      name: "Evently Dapp",
+      icon: "/assets/complete-logo.svg",
     },
     redirectTo: "/",
     onFinish: () => {
       saveEncryptedValue("principalAddress", userSession.loadUserData().profile.stxAddress.testnet);
       window.location.reload();
     },
-    userSession,
+    onCancel: () => {
+      console.log('no conection'); // WHEN user cancels/closes pop-up
+    },
   });
 }
 

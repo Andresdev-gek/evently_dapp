@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx";
 
 import { twMerge } from "tailwind-merge";
@@ -108,7 +109,7 @@ export const handleError = (error: unknown) => {
 
 
 
-const SECRET_KEY = 'your_secret_key'; // Secret key for encryption
+const SECRET_KEY = 'my secret key' // Secret key for encryption
 
 // Function to encrypt and store a value in local storage
 export function saveEncryptedValue(key: string, value: any): void {

@@ -14,6 +14,7 @@ import User from "../database/models/user.model";
 import Event, { IEvent } from "../database/models/event.model";
 import Category from "../database/models/category.model";
 import { revalidatePath } from "next/cache";
+import { contractAddEvent, ContractAddEvent } from "../smart-contract-service";
 
 export const getCategoryByName = async (name: string) => {
     return Category.findOne({ name: { $regex: name, $options: "i" } });
@@ -29,50 +30,59 @@ const populateEvent = async (query: any) => {
         .populate({ path: "category", model: Category, select: "_id name" });
 };
 
-
 // CREATE
-export const createEvent = async ({ userId, event, path }: CreateEventParams) => {
+export const createEvent = async ({
+    userId,
+    event,
+    path,
+}: CreateEventParams) => {
     try {
-        await connectToDatabase()
+        await connectToDatabase();
 
-        const organizer = await User.findById(userId)
-        if (!organizer) throw new Error('Organizer not found')
+        const organizer = await User.findById(userId);
+        if (!organizer) throw new Error("Organizer not found");
 
-        const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId })
-        revalidatePath(path)
+        const newEvent = await Event.create({
+            ...event,
+            category: event.categoryId,
+            organizer: userId,
+        });
+        revalidatePath(path);
 
-        return JSON.parse(JSON.stringify(newEvent))
+        return JSON.parse(JSON.stringify(newEvent));
     } catch (error) {
-        handleError(error)
+        console.log(error);
+        //handleError(error)
     }
-}
-
-
+};
 
 // UPDATE
-export const updateEvent = async ({ userId, event, path }: UpdateEventParams) => {
+export const updateEvent = async ({
+    userId,
+    event,
+    path,
+}: UpdateEventParams) => {
     try {
-        await connectToDatabase()
+        await connectToDatabase();
 
-        const eventToUpdate = await Event.findById(event._id)
+        const eventToUpdate = await Event.findById(event._id);
 
         if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
-            throw new Error('Unauthorized or event not found')
+            throw new Error("Unauthorized or event not found");
         }
 
         const updatedEvent = await Event.findByIdAndUpdate(
             event._id,
             { ...event, category: event.categoryId },
             { new: true }
-        )
-        revalidatePath(path)
+        );
+        revalidatePath(path);
 
-        return JSON.parse(JSON.stringify(updatedEvent))
+        return JSON.parse(JSON.stringify(updatedEvent));
     } catch (error) {
-        handleError(error)
+        handleError(error);
     }
-}
-
+};
 
 export const getEventById = async (eventId: string) => {
     try {
@@ -90,7 +100,6 @@ export const getEventById = async (eventId: string) => {
     }
 };
 
-
 export const findEventByUuid = async (uuid: string) => {
     try {
         const event = await Event.findOne({ eventUUID: uuid });
@@ -100,19 +109,18 @@ export const findEventByUuid = async (uuid: string) => {
             return null; // Or throw an error if event not found is a critical issue
         }
     } catch (error) {
-        console.error('Error finding event by UUID:', error);
-        handleError(error)
+        console.error("Error finding event by UUID:", error);
+        handleError(error);
     }
 };
-
 
 export const findEventsByUuids = async (uuids: string[]) => {
     try {
         const events = await Event.find({ eventUUID: { $in: uuids } });
         return events;
     } catch (error) {
-        console.error('Error finding events by UUIDs:', error);
-        handleError(error)
+        console.error("Error finding events by UUIDs:", error);
+        handleError(error);
     }
 };
 
@@ -120,14 +128,12 @@ export const findEventsByOwnerPrincipal = async (ownerPrincipal: string) => {
     try {
         const eventsQuery = Event.find({ ownerPrincipal });
         const events = await populateEvent(eventsQuery);
-        return JSON.parse(JSON.stringify(events))
+        return JSON.parse(JSON.stringify(events));
     } catch (error) {
-        console.error('Error finding events by ownerPrincipal:', error);
-        handleError(error)
+        console.error("Error finding events by ownerPrincipal:", error);
+        handleError(error);
     }
 };
-
-
 
 export const deleteEvent = async ({
     eventId,

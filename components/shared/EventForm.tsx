@@ -30,15 +30,18 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { useRouter } from "next/navigation";
 import { createEvent, updateEvent } from "@/lib/actions/event.actions";
 import { IEvent } from "@/lib/database/models/event.model";
+import { contractUpdateEvent, contractAddEvent, ContractAddEvent } from "@/lib/smart-contract-service";
+import { userSession } from "./ConnectWallet";
 
 type EventFormProps = {
   userId: string;
   type: "Create" | "Update";
   event?: IEvent;
   eventId?: string;
+  eventUUID?: string;
 };
 
-const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
+const EventForm = ({ userId, type, event, eventId, eventUUID }: EventFormProps) => {
   const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
 
   useEffect(() => {
@@ -96,25 +99,44 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
     if (type === "Create") {
       try {
+
+        //datos iniciales necesarios para el evento
         const uuid = `EI${crypto.randomUUID()}`;
+
+        const event = {
+          ...values,
+        };
+
+
         // aca se crea en stacks
-        // aca se crea en mongo
-
-        const newEvent = await createEvent({
+        const contractParams: ContractAddEvent = {
           ownerPrincipal: actualPrincipal as string,
-          userId,
-          event: {
-            ...values,
-            imageUrl: uploadedImageUrl,
-            eventUUID: uuid,
-            ownerPrincipal: actualPrincipal as string,
-          },
-          path: "/profile",
-        });
+          eventUUID: uuid,
+          priceInStx: event.price,
+          endDateTime: event.endDateTime,
+        };
 
-        if (newEvent) {
-          form.reset();
-          router.push(`/events/${newEvent._id}`);
+        const res = await contractAddEvent(contractParams);
+        
+
+        // aca se crea en mongo si  sale bien todo en stacks
+        if (res && res.txId) {
+          const newEvent = await createEvent({
+            ownerPrincipal: actualPrincipal as string,
+            userId,
+            event: {
+              ...values,
+              imageUrl: uploadedImageUrl,
+              eventUUID: uuid,
+              ownerPrincipal: actualPrincipal as string,
+            },
+            path: "/profile",
+          });
+
+          if (newEvent) {
+            form.reset();
+            router.push(`/events/${newEvent._id}`);
+          }
         }
       } catch (error) {
         console.log(error);
@@ -128,23 +150,45 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
       }
 
       try {
-        const updatedEvent = await updateEvent({
-          ownerPrincipal: actualPrincipal as string,
-          userId,
-          event: {
-            ...values,
-            imageUrl: uploadedImageUrl,
-            _id: eventId,
-            eventUUID: event?.eventUUID as string,
-            ownerPrincipal: actualPrincipal as string,
-          },
-          path: `/events/${eventId}`,
-        });
 
-        if (updatedEvent) {
-          form.reset();
-          router.push(`/events/${updatedEvent._id}`);
+
+        const event = {
+          ...values,
+        };
+
+
+        // aca se crea en stacks
+        const contractParams: ContractAddEvent = {
+          ownerPrincipal: actualPrincipal as string,
+          eventUUID: eventUUID as string,
+          priceInStx: event.price,
+          endDateTime: event.endDateTime,
+        };
+
+        const res = await contractUpdateEvent(contractParams);
+        
+
+        // aca se crea en mongo si  sale bien todo en stacks
+        if (res && res.txId) {
+          const updatedEvent = await updateEvent({
+            ownerPrincipal: actualPrincipal as string,
+            userId,
+            event: {
+              ...values,
+              imageUrl: uploadedImageUrl,
+              _id: eventId,
+              eventUUID: eventUUID as string,
+              ownerPrincipal: actualPrincipal as string,
+            },
+            path: `/events/${eventId}`,
+          });
+  
+          if (updatedEvent) {
+            form.reset();
+            router.push(`/events/${updatedEvent._id}`);
+          }
         }
+        
       } catch (error) {
         console.log(error);
       }
@@ -452,15 +496,16 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             </div>
           </div>
         )}
-
-        <Button
-          type="submit"
-          size="lg"
-          disabled={form.formState.isSubmitting}
-          className="button col-span-2 w-full"
-        >
-          {form.formState.isSubmitting ? "Submitting" : `${type} Event`}
-        </Button>
+        {userSession.isUserSignedIn() && (
+          <Button
+            type="submit"
+            size="lg"
+            disabled={form.formState.isSubmitting}
+            className="button col-span-2 w-full"
+          >
+            {form.formState.isSubmitting ? "Submitting" : `${type} Event`}
+          </Button>
+        )}
       </form>
     </Form>
   );
