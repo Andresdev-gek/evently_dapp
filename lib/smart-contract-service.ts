@@ -123,7 +123,7 @@ function getEvent(eventUUID: string) {
         });
 }
 
-type ContractBuyTicket = {
+export type ContractBuyTicket = {
     ownerPrincipal: string;
     eventUUID: string;
     ticketId: string;
@@ -166,11 +166,13 @@ type ContractBuyTicket = {
     });
 } */
 
-function buyTicket(
+export function buyTicket(
     { ownerPrincipal, eventUUID, ticketId, price }: ContractBuyTicket,
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const priceInNumber: number = Number(`${price}000`);
+
+        let payTxId: string = ''
 
         if (priceInNumber) {
             openSTXTransfer({
@@ -179,6 +181,7 @@ function buyTicket(
                 amount: priceInNumber.toString(),
                 anchorMode: AnchorMode.Any,
                 onFinish: (response) => {
+                    payTxId = response.txId as string;
                     console.log("Transferencia completada:", response);
                 },
                 onCancel: () => {
@@ -196,7 +199,7 @@ function buyTicket(
             functionArgs: [eventUUID, ticketId],
             onFinish: (data) => {
                 console.log("Transacción completada:", data);
-                resolve(data); // Resuelve la promesa con el resultado de la transacción
+                resolve({ ...data, payTxId }); // Resuelve la promesa con el resultado de la transacción
             },
             onCancel: () => {
                 console.log("Transacción cancelada:", "Transaction was canceled");

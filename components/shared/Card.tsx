@@ -68,7 +68,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
 
          {!hidePrice && !event.isFree && 
          <div className='flex gap-2 '>
-            <span className='flex items-center p-semibold-14 w-min rounded-full bg-purple-100 pl-4 pr-8 py-1 text-purple-700 '>
+            <span className='flex items-center p-semibold-14 rounded-full bg-purple-100  p-8 py-1 text-purple-700 '>
             <Image
                       src="/assets/icons/stx-logo.svg"
                       alt="stx"

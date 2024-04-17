@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { AppStoreProvider } from "@/store/app-store-provider";
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -24,12 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppStoreProvider>
+    
       <ClerkProvider>
         <html lang="en">
-          <body className={poppins.variable}>{children}</body>
+          <body className={poppins.variable}>{children}<SpeedInsights /></body>
         </html>
       </ClerkProvider>
-    </AppStoreProvider>
+    
   );
 }

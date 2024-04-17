@@ -1,3 +1,5 @@
+import { IEvent } from "@/lib/database/models/event.model";
+
 // ====== USER PARAMS
 export type CreateUserParams = {
     clerkId: string;
@@ -123,11 +125,15 @@ export type CheckoutOrderParams = {
 };
 
 export type CreateOrderParams = {
-    stripeId: string;
+    buyerPrincipal: string;
     eventId: string;
+    eventUUID: string;
+    event: IEvent;
     buyerId: string;
     totalAmount: string;
     createdAt: Date;
+    contractTxId: string;
+    payTxId: string;
 };
 
 export type GetOrdersByEventParams = {

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import Checkout from "./Checkout";
 import Link from "next/link";
 import { getDecryptedValue } from "@/lib/utils";
+import { CreateOrderParams } from "@/types";
+import { ContractBuyTicket, buyTicket } from "@/lib/smart-contract-service";
 
 const CheckoutButton = ({ event }: { event: IEvent }) => {
   const { user } = useUser();
@@ -14,12 +16,27 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
 
   const hasEventFinished = new Date(event.endDateTime as Date) < new Date();
 
-  /*const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
+  const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
 
   useEffect(() => {
     const principal = getDecryptedValue("principalAddress");
     if (principal) setActualPrincipal(principal as string);
-  }, []); */
+  }, []); 
+
+
+  const handleCheckout = async (createOrder: CreateOrderParams) => {
+    //se arma objeto para stacks 
+    const dataToPurchaseTicket: ContractBuyTicket = {
+      ownerPrincipal: event.ownerPrincipal,
+      eventUUID: event.eventUUID,
+      ticketId: `TI${crypto.randomUUID()}`,
+      price: event.price as string
+    }
+    const purchaseResFromStacks = await buyTicket(dataToPurchaseTicket);
+    console.log(purchaseResFromStacks)
+
+        
+  }
 
   return (
     <div className="flex items-center gap-3">
@@ -37,7 +54,7 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           </SignedOut>
 
           <SignedIn>
-            <Checkout event={event} userId={userId} buyerPrincipal={'some pricipal'}/>
+            <Checkout event={event} userId={userId} buyerPrincipal={'some pricipal'} onCheckout={handleCheckout}/>
           </SignedIn>
         </>
       )}

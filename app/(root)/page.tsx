@@ -6,8 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { getAllEvents } from "@/lib/actions/event.actions";
-//import { useAppStore } from "@/store/app-store-provider";
-//import { AppStore } from "@/store/app.store";
+
 
 export default async function Home() {
   const events = await getAllEvents({
