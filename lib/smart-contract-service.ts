@@ -170,7 +170,7 @@ export function buyTicket(
     { ownerPrincipal, eventUUID, ticketId, price }: ContractBuyTicket,
 ): Promise<any> {
     return new Promise((resolve, reject) => {
-        const priceInNumber: number = Number(`${price}000`);
+        const priceInNumber: number = Number(`${price}000000`);
 
         let payTxId: string = ''
 
