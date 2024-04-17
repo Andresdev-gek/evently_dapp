@@ -174,11 +174,14 @@ export function buyTicket(
 
         let payTxId: string = ''
 
+        const eventId = stringAsciiCV(eventUUID)
+        const ticketIdToAscii = stringAsciiCV(ticketId)
+
         if (priceInNumber) {
             openSTXTransfer({
                 network: new StacksTestnet(),
                 recipient: ownerPrincipal,
-                amount: priceInNumber.toString(),
+                amount: `${priceInNumber}`,
                 anchorMode: AnchorMode.Any,
                 onFinish: (response) => {
                     payTxId = response.txId as string;
@@ -191,12 +194,13 @@ export function buyTicket(
             });
         }
 
+
         openContractCall({
             network,
             contractAddress,
             contractName,
             functionName: "buy-ticket",
-            functionArgs: [eventUUID, ticketId],
+            functionArgs: [eventId, ticketIdToAscii],
             onFinish: (data) => {
                 console.log("Transacción completada:", data);
                 resolve({ ...data, payTxId }); // Resuelve la promesa con el resultado de la transacción
