@@ -20,7 +20,6 @@ export default async function Home() {
   //const { actualPrincipal, setActualPrincipal } = useAppStore<AppStore>((state) => state)
 
   return (
-
     <>
       <section className="bg-primary-50 bg-dotted-pattern bg-contain py-5 md:py-10">
         <div className="wrapper grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-0">

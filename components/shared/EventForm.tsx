@@ -116,11 +116,12 @@ const EventForm = ({ userId, type, event, eventId, eventUUID }: EventFormProps) 
           endDateTime: event.endDateTime,
         };
 
-        const res = await contractAddEvent(contractParams);
+        const resFromStacks = await contractAddEvent(contractParams);
         
 
         // aca se crea en mongo si  sale bien todo en stacks
-        if (res && res.txId) {
+        if (resFromStacks && resFromStacks.txId) {
+          
           const newEvent = await createEvent({
             ownerPrincipal: actualPrincipal as string,
             userId,
@@ -134,9 +135,12 @@ const EventForm = ({ userId, type, event, eventId, eventUUID }: EventFormProps) 
           });
 
           if (newEvent) {
+            
             form.reset();
             router.push(`/events/${newEvent._id}`);
           }
+        }else {
+          console.log("NO entro enn el res")
         }
       } catch (error) {
         console.log(error);
@@ -157,7 +161,7 @@ const EventForm = ({ userId, type, event, eventId, eventUUID }: EventFormProps) 
         };
 
 
-        // aca se crea en stacks
+        // aca se edita en stacks
         const contractParams: ContractAddEvent = {
           ownerPrincipal: actualPrincipal as string,
           eventUUID: eventUUID as string,
@@ -165,11 +169,11 @@ const EventForm = ({ userId, type, event, eventId, eventUUID }: EventFormProps) 
           endDateTime: event.endDateTime,
         };
 
-        const res = await contractUpdateEvent(contractParams);
+        const resFromStacks = await contractUpdateEvent(contractParams);
         
 
         // aca se crea en mongo si  sale bien todo en stacks
-        if (res && res.txId) {
+        if (resFromStacks && resFromStacks.txId) {
           const updatedEvent = await updateEvent({
             ownerPrincipal: actualPrincipal as string,
             userId,

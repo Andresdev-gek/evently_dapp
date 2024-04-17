@@ -15,8 +15,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { deleteEvent } from '@/lib/actions/event.actions'
 
-//import { deleteEvent } from '@/lib/actions/event.actions'
+
 
 const DeleteConfirmation = ({ eventId, eventUUID }: { eventId: string, eventUUID: string }) => {
   const pathname = usePathname()
@@ -25,7 +26,7 @@ const DeleteConfirmation = ({ eventId, eventUUID }: { eventId: string, eventUUID
   const deleteHandler = async () => {
     // await inactivate in stacks
 
-    // await deleteEvent({ eventId, path: pathname }) //mongo
+    await deleteEvent({ eventId, path: pathname }) //mongo
 
     console.log("deleting")
   }

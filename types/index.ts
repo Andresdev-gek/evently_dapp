@@ -119,6 +119,7 @@ export type CheckoutOrderParams = {
     price: string;
     isFree: boolean;
     buyerId: string;
+    buyerPrincipal: string;
 };
 
 export type CreateOrderParams = {

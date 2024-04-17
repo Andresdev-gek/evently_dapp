@@ -51,8 +51,8 @@ export const createEvent = async ({
 
         return JSON.parse(JSON.stringify(newEvent));
     } catch (error) {
-        console.log(error);
-        //handleError(error)
+        console.log(error)
+        handleError(error)
     }
 };
 
@@ -139,7 +139,7 @@ export const deleteEvent = async ({
     eventId,
     path,
     eventUUID,
-}: DeleteEventParams) => {
+}: any) => {
     try {
         await connectToDatabase();
         const deletedEvent = await Event.findByIdAndDelete(eventId);
