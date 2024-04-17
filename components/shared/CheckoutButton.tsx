@@ -14,12 +14,12 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
 
   const hasEventFinished = new Date(event.endDateTime as Date) < new Date();
 
-  const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
+  /*const [actualPrincipal, setActualPrincipal] = useState<null | string>(null);
 
   useEffect(() => {
     const principal = getDecryptedValue("principalAddress");
     if (principal) setActualPrincipal(principal as string);
-  }, []);
+  }, []); */
 
   return (
     <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           </SignedOut>
 
           <SignedIn>
-            <Checkout event={event} userId={userId} buyerPrincipal={actualPrincipal as string}/>
+            <Checkout event={event} userId={userId} buyerPrincipal={'some pricipal'}/>
           </SignedIn>
         </>
       )}

@@ -23,6 +23,7 @@
     "@stacks/connect-ui": "^6.4.1",
     "@stacks/transactions": "^6.13.1",
     "@uploadthing/react": "^6.4.4",
+    "@vercel/speed-insights": "^1.0.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "crypto-js": "^4.2.0",
